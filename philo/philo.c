@@ -1,26 +1,39 @@
 #include "philo.h"
 
-void *philosopher()
+void *philosopher(void *arg)
 {
-    // CONTINUE HERE
+    int id = (int *)(*arg)->id; // WHAT HERE
+    int left_fork = id;
+    int right_fork = (id + 1) % args.
 }
 
-int create_philos_and_forks(int philos_num, pthread_mutex_t *forks, pthread_t philos)
+int create_philos_and_forks(t_args my_args, pthread_mutex_t *forks, pthread_t *philos)
 {
     // pthread_t philos[philos_num];
-    int ids[philos_num];
+    int ids[my_args.philos_num];
 
-    for(int i = 0; i < philos_num; i++)
-    {
+    for (int i = 0; i < my_args.philos_num; i++) {
         pthread_mutex_init(&forks[i], NULL);
         ids[i] = i;
-        if(pthread_create(&philos[i], NULL, philosopher, &ids[i]) != 0)
+    }
+
+    // PASS A STUCT TO void *philosopher(void *arg)
+
+    for(int i = 0; i < my_args.philos_num; i++)
+    {
+        my_args.id = i;
+        if(pthread_create(&philos[i], NULL, philosopher, &my_args) != 0)
         {
-            // CONTINUE HERE
+            perror("Failed to create thread");
+            return 1;
         }
     }
 
-
+    for(int i = 0; i < my_args.philos_num; i++)
+    {
+        pthread_join(philos[i], NULL);
+    }
+    return 0;
 }
 
 int philos(t_args  my_args)
@@ -31,7 +44,7 @@ int philos(t_args  my_args)
     
     // valid_input
     // my_args = make_struct;
-    create_philos_and_forks(my_args.philos_num, forks, philos);
+    create_philos_and_forks(my_args, forks, philos);
     
 
 }
