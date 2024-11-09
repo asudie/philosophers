@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 typedef struct s_args 
 {
@@ -13,6 +14,9 @@ typedef struct s_args
     int time2sleep;
     // int times2eat;
     int id;
+    pthread_mutex_t *forks;
+    pthread_t *philos;
+    struct timeval start_time;
 }   t_args;
 
 // typedef struct s_func_args 
