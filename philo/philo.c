@@ -12,25 +12,33 @@ long get_time_ms(t_args *args)
 void *philosopher(void *arg)
 {
     t_args *args = (t_args *)arg;
-    long time;
+    // long time;
     int id = args->id;
     int left_fork = id;
-    int right_fork = (id + 1) % args->philos_num; // what if id > num_phil
+    int right_fork = (id + 1) % args->philos_num;
     if(right_fork > args->philos_num)
         right_fork = 0;
 
     while(1)
     {
-        time = get_time_ms(args);
-        printf("%l %d is thinking\n", time, id);
-        usleep(args->time2sleep);
-
         if(args->id % 2 == 0)
         {
             pthread_mutex_lock(&args->forks[left_fork]);
             pthread_mutex_lock(&args->forks[right_fork]);
+        } else
+        {
+            pthread_mutex_lock(&args->forks[right_fork]);
+            pthread_mutex_lock(&args->forks[left_fork]);
         }
-
+        // check time for dying
+        printf("%l %d is eating\n", get_time_ms(args), id);
+        usleep(args->time2eat);
+        pthread_mutex_unlock(&args->forks[right_fork]);
+        pthread_mutex_unlock(&args->forks[left_fork]);
+        printf("%l %d is sleeping\n", get_time_ms(args), id);
+        usleep(args->time2sleep);
+        printf("%l %d is \n", get_time_ms(args), id);
+        usleep(args->time2sleep);
 
     }
 }
