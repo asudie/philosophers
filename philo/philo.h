@@ -19,6 +19,10 @@ typedef struct s_args
     struct timeval start_time;
 }   t_args;
 
+int philos(t_args  my_args);
+int create_philos_and_forks(t_args my_args);
+void *philosopher(void *arg);
+long get_time_ms(t_args *args);
 // typedef struct s_func_args 
 // {
 //     int philos_num;
