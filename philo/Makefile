@@ -23,10 +23,10 @@ test:
 	$(CC) $(CFLAGS) -c $< -o $@ 
 	
 clean :
-	rm -rf $(OBJS) *.dSYM a.out *.o
+	rm -rf $(OBJS) *.dSYM a.out *.o test
 
 fclean : clean
-	rm -f $(NAME)
+	rm -f $(NAME) 
 
 re : fclean all
 

@@ -18,12 +18,13 @@ void *philosopher(void *arg)
     int right_fork = (id + 1) % args->philos_num;
     if(right_fork > args->philos_num)
         right_fork = 0;
+    printf("%ld %d is here\n", get_time_ms(args), id);
 
     while(1)
     {
         if(get_time_ms(args) >= args->time2die)
         {
-            printf("%ld %d died\n", get_time_ms(args), id);
+            printf("%ld %d died\n", get_time_ms(args), args->id);
             return NULL; // will it finish like this???
         }
         if(args->id % 2 == 0)
@@ -66,12 +67,23 @@ int create_philos_and_forks(t_args my_args)
 
     for(int i = 0; i < my_args.philos_num; i++)
     {
-        my_args.id = i + 1;
-        if(pthread_create(&my_args.philos[i], NULL, philosopher, &my_args) != 0)
+        t_args *temp_args = malloc(sizeof(t_args));
+        if(!temp_args)
         {
-            perror("Failed to create thread");
+            printf("Failed to allocate memory\n");
             return 1;
         }
+        my_args.id = i + 1;
+        printf("HERE 2: %d\n", my_args.id);
+        *temp_args = my_args;
+        
+        if(pthread_create(&my_args.philos[i], NULL, philosopher, temp_args) != 0)
+        {
+            printf("Failed to create thread\n");
+            free(temp_args);
+            return 1;
+        }
+        free(temp_args);
     }
 
     for(int i = 0; i < my_args.philos_num; i++)
@@ -92,6 +104,6 @@ int philos(t_args  my_args)
 
     // valid_input
     // my_args = make_struct;
-    create_philos_and_forks(my_args);
-    return 0;
+    
+    return create_philos_and_forks(my_args);
 }
