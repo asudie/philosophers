@@ -8,6 +8,16 @@ long get_time_ms(t_args *args) {
     return (seconds * 1000) + (microsec / 1000);
 }
 
+int check_dead(t_args *args)
+{
+    long current_time = get_time_ms(args);
+        if(current_time - args->last_meal_time >= args->time2die)
+        {
+            printf("%ld %d died\n", get_time_ms(args), args->id);
+            return 1; // do so it will finish after first death 
+        }
+        return 0;
+}
 void *philosopher(void *arg) {
     t_args *args = (t_args *)arg;
     int id = args->id;
@@ -17,6 +27,8 @@ void *philosopher(void *arg) {
     printf("%ld %d is here\n", get_time_ms(args), id);
 
     while (1) {
+        if(check_dead(args))
+            return NULL;
         if (get_time_ms(args) >= args->time2die) {
             printf("%ld %d died\n", get_time_ms(args), id);
             return NULL;
@@ -30,12 +42,11 @@ void *philosopher(void *arg) {
             pthread_mutex_lock(&args->forks[left_fork]);
         }
 
-        if (get_time_ms(args) >= args->time2die) {
-            printf("%ld %d died\n", get_time_ms(args), id);
+        if(check_dead(args))
             return NULL;
-        }
-
+        
         printf("%ld %d is eating\n", get_time_ms(args), id);
+        args->last_meal_time = get_time_ms(args);
         usleep(1000 * args->time2eat);
         pthread_mutex_unlock(&args->forks[right_fork]);
         pthread_mutex_unlock(&args->forks[left_fork]);
@@ -84,3 +95,19 @@ int philos(t_args my_args) {
     gettimeofday(&my_args.start_time, NULL);
     return create_philos_and_forks(my_args);
 }
+
+// 0 1 is here
+// 0 1 is eating
+// 0 2 is here
+// 0 3 is here
+// 100 1 is sleeping
+// 100 3 is eating  <- looks suspicious
+// 100 2 is eating <- looks suspicious
+// 200 1 is thinking
+// 200 3 is sleeping
+// 200 2 is sleeping
+// 300 1 died
+// 300 2 is thinking
+// 300 3 is thinking
+// 400 3 died
+// 400 2 died
