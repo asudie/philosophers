@@ -19,7 +19,8 @@ typedef struct s_args
     pthread_t *philos;
     struct timeval start_time;
     long last_meal_time;
-    int philosopher_died;
+    int *philosopher_died;
+    pthread_mutex_t death_mutex;
 }   t_args;
 
 int philos(t_args  my_args);
