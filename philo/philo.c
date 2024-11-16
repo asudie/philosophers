@@ -8,25 +8,19 @@ long get_time_ms(t_args *args) {
     return (seconds * 1000) + (microsec / 1000);
 }
 
-int check_dead(t_args *args, pthread_mutex_t *death_mutex)
+int check_dead(t_args *args)
 {
+    if(*args->philosopher_died)
+        return 1;
     long current_time = get_time_ms(args);
-
-    pthread_mutex_lock(death_mutex);
-    if (*(args->philosopher_died)) {
-        pthread_mutex_unlock(death_mutex);
-        return 1;
-    }
-    if (current_time - args->last_meal_time >= args->time2die) {
-        printf("%ld %d died\n", current_time, args->id);
-        *(args->philosopher_died) = 1;
-        pthread_mutex_unlock(death_mutex);
-        return 1;
-    }
-    pthread_mutex_unlock(death_mutex);
-    return 0;
+        if(current_time - args->last_meal_time >= args->time2die)
+        {
+            printf("%ld %d died\n", get_time_ms(args), args->id);
+            *args->philosopher_died = 1;
+            return 1; // do so it will finish after first death 
+        }
+        return 0;
 }
-
 void *philosopher(void *arg) {
     t_args *args = (t_args *)arg;
     int id = args->id;
@@ -36,22 +30,27 @@ void *philosopher(void *arg) {
     printf("%ld %d is here\n", get_time_ms(args), id);
 
     while (1) {
-        if (check_dead(args, &args->death_mutex))
+        if(check_dead(args))
             return NULL;
-
-        pthread_mutex_lock(&args->forks[left_fork]);
-        pthread_mutex_lock(&args->forks[right_fork]);
-
-        if (check_dead(args, &args->death_mutex)) {
-            pthread_mutex_unlock(&args->forks[right_fork]);
-            pthread_mutex_unlock(&args->forks[left_fork]);
+        if (get_time_ms(args) >= args->time2die) {
+            printf("%ld %d died\n", get_time_ms(args), id);
             return NULL;
         }
+        
+        if (id % 2 == 0) {
+            pthread_mutex_lock(&args->forks[left_fork]);
+            pthread_mutex_lock(&args->forks[right_fork]);
+        } else {
+            pthread_mutex_lock(&args->forks[right_fork]);
+            pthread_mutex_lock(&args->forks[left_fork]);
+        }
 
+        if(check_dead(args))
+            return NULL;
+        
         printf("%ld %d is eating\n", get_time_ms(args), id);
         args->last_meal_time = get_time_ms(args);
         usleep(1000 * args->time2eat);
-
         pthread_mutex_unlock(&args->forks[right_fork]);
         pthread_mutex_unlock(&args->forks[left_fork]);
 
@@ -79,7 +78,6 @@ t_args *args_copy(t_args args)
     temp_args->time2die = args.time2die;
     temp_args->time2eat = args.time2eat;
     temp_args->time2sleep = args.time2sleep;
-    temp_args->death_mutex = args.death_mutex;
 
     return temp_args;
 }
@@ -87,22 +85,20 @@ t_args *args_copy(t_args args)
 int create_philos_and_forks(t_args my_args) {
     pthread_mutex_t forks[my_args.philos_num];
     pthread_t philos[my_args.philos_num];
-    
-
-    pthread_mutex_init(&my_args.death_mutex, NULL);
 
     my_args.forks = forks;
     my_args.philos = philos;
     int flag = 0;
     my_args.philosopher_died = &flag;
-
     for (int i = 0; i < my_args.philos_num; i++) {
         pthread_mutex_init(&my_args.forks[i], NULL);
     }
 
     for (int i = 0; i < my_args.philos_num; i++) {
-        t_args *temp_args = args_copy(my_args);
-        temp_args->id = i + 1;
+        t_args *temp_args;
+        temp_args = args_copy(my_args);;
+        temp_args->id = i + 1;  // Assign a unique id for each philosopher
+
         if (pthread_create(&my_args.philos[i], NULL, philosopher, temp_args) != 0) {
             printf("Failed to create thread\n");
             free(temp_args);
@@ -114,7 +110,6 @@ int create_philos_and_forks(t_args my_args) {
         pthread_join(my_args.philos[i], NULL);
     }
 
-    pthread_mutex_destroy(&my_args.death_mutex);
     return 0;
 }
 
