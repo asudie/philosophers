@@ -34,6 +34,7 @@ void *philosopher(void *arg) {
             return NULL;
         if (get_time_ms(args) >= args->time2die) {
             printf("%ld %d died\n", get_time_ms(args), id);
+            *args->philosopher_died = 1;
             return NULL;
         }
         
@@ -53,9 +54,12 @@ void *philosopher(void *arg) {
         usleep(1000 * args->time2eat);
         pthread_mutex_unlock(&args->forks[right_fork]);
         pthread_mutex_unlock(&args->forks[left_fork]);
-
+        if(check_dead(args))
+            return NULL;
         printf("%ld %d is sleeping\n", get_time_ms(args), id);
         usleep(1000 * args->time2sleep);
+        if(check_dead(args))
+            return NULL;
         printf("%ld %d is thinking\n", get_time_ms(args), id);
         usleep(1000 * 100);
     }
@@ -96,8 +100,8 @@ int create_philos_and_forks(t_args my_args) {
 
     for (int i = 0; i < my_args.philos_num; i++) {
         t_args *temp_args;
-        temp_args = args_copy(my_args);;
-        temp_args->id = i + 1;  // Assign a unique id for each philosopher
+        temp_args = args_copy(my_args);
+        temp_args->id = i;  // Assign a unique id for each philosopher
 
         if (pthread_create(&my_args.philos[i], NULL, philosopher, temp_args) != 0) {
             printf("Failed to create thread\n");
