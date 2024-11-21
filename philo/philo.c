@@ -89,6 +89,7 @@ t_args *args_copy(t_args args)
 int create_philos_and_forks(t_args my_args) {
     pthread_mutex_t forks[my_args.philos_num];
     pthread_t philos[my_args.philos_num];
+    pthread_t monitor_thread;
 
     my_args.forks = forks;
     my_args.philos = philos;
@@ -96,19 +97,25 @@ int create_philos_and_forks(t_args my_args) {
     my_args.philosopher_died = &flag;
     for (int i = 0; i < my_args.philos_num; i++) {
         pthread_mutex_init(&my_args.forks[i], NULL);
+        pthread_mutex_init(&my_args.not_shared[i].meal_time_mutex, NULL);
     }
 
     for (int i = 0; i < my_args.philos_num; i++) {
         t_args *temp_args;
-        temp_args = args_copy(my_args);
-        temp_args->id = i;  // Assign a unique id for each philosopher
+        temp_args = args_copy(my_args); // continue changing for not_shared
+        temp_args->id = i;  // What to do with id, should I create temp or should I send my args? should noy_shared be a massive?
 
         if (pthread_create(&my_args.philos[i], NULL, philosopher, temp_args) != 0) {
-            printf("Failed to create thread\n");
+            printf("Failed to create philosopher\n");
             free(temp_args);
             return 1;
         }
     }
+    if (pthread_create(&monitor_thread, NULL, monitor, &my_args) != 0) {
+            printf("Failed to create philosopher\n");
+            return 1;
+    }
+
 
     for (int i = 0; i < my_args.philos_num; i++) {
         pthread_join(my_args.philos[i], NULL);
@@ -122,18 +129,28 @@ int philos(t_args my_args) {
     return create_philos_and_forks(my_args);
 }
 
-// 0 1 is here
-// 0 1 is eating
-// 0 2 is here
-// 0 3 is here
-// 100 1 is sleeping
-// 100 3 is eating  <- looks suspicious
-// 100 2 is eating <- looks suspicious
-// 200 1 is thinking
-// 200 3 is sleeping
-// 200 2 is sleeping
-// 300 1 died
-// 300 2 is thinking
-// 300 3 is thinking
-// 400 3 died
-// 400 2 died
+void *monitor(void *arg)
+{
+    t_args *args = (t_args *)arg;
+
+    while(1)
+    {
+        for(int i = 0; i < args->philos_num; i++)
+        {
+            long current_time = get_time_ms(args);
+            pthread_mutex_lock(&args->meal_time_mutex[i]);
+            if(current_time - args[i].last_meal_time >= args->time2die)
+            {
+                printf("%ld %d died\n", get_time_ms(args), args->id);
+                *args->philosopher_died = 1;
+                pthread_mutex_unlock(&args->meal_time_mutex[i]);
+                return NULL;
+            }
+            pthread_mutex_unlock(&args->meal_time_mutex[i]);
+        }
+        usleep(1000);
+    }
+    return NULL;
+}
+
+// DO MONITORING PROCESS TO CHECK DEATHS <---------------------------------
