@@ -23,7 +23,7 @@ int check_dead(t_args *args)
 }
 void *philosopher(void *arg) {
     t_args *args = (t_args *)arg;
-    int id = args->id;
+    int id = args->id; // <------- CONTINUE CHANGING HERE
     int left_fork = id;
     int right_fork = (id + 1) % args->philos_num;
 
@@ -65,88 +65,92 @@ void *philosopher(void *arg) {
     }
 }
 
-t_args *args_copy(t_args args)
+t_args *args_copy(t_meal_info  *info)
 {
-    t_args *temp_args = malloc(sizeof(t_args));
-    if (!temp_args) {
+    t_meal_info *temp_info = malloc(sizeof(t_args));
+    if (!temp_info) {
             printf("Failed to allocate memory\n");
             return NULL;
         }
-    temp_args->forks = args.forks;
-    temp_args->id = args.id;
-    temp_args->last_meal_time = args.last_meal_time;
-    temp_args->philos = args.philos;
-    temp_args->philos_num = args.philos_num;
-    temp_args->philosopher_died = args.philosopher_died;
-    temp_args->start_time = args.start_time;
-    temp_args->time2die = args.time2die;
-    temp_args->time2eat = args.time2eat;
-    temp_args->time2sleep = args.time2sleep;
+    // temp_info->args = malloc(sizeof(t_args));
+    temp_info->args->forks = info->args->forks;
+    temp_info->id = info->id;
+    temp_info->args = info->args;
+    temp_info->meal_time_mutex = info->meal_time_mutex;
+    temp_info->last_meal_time = info->last_meal_time;
+    // temp_info->args->philos = info->args->philos;
+    // temp_info->args->philos_num = info->args->philos_num;
+    // temp_info->args->philosopher_died = info->args->philosopher_died;
+    // temp_info->args->start_time = info->args->start_time;
+    // temp_info->args->time2die = info->args->time2die;
+    // temp_info->args->time2eat = info->args->time2eat;
+    // temp_info->args->time2sleep = info->args->time2sleep;
 
-    return temp_args;
+    return temp_info;
 }
 
-int create_philos_and_forks(t_args my_args) {
-    pthread_mutex_t forks[my_args.philos_num];
-    pthread_t philos[my_args.philos_num];
+int create_philos_and_forks(t_meal_info  *info) {
+    pthread_mutex_t forks[info->args->philos_num];
+    pthread_t philos[info->args->philos_num];
     pthread_t monitor_thread;
 
-    my_args.forks = forks;
-    my_args.philos = philos;
+    info->args->forks = forks;
+    info->args->philos = philos;
     int flag = 0;
-    my_args.philosopher_died = &flag;
-    for (int i = 0; i < my_args.philos_num; i++) {
-        pthread_mutex_init(&my_args.forks[i], NULL);
-        pthread_mutex_init(&my_args.not_shared[i].meal_time_mutex, NULL);
+    info->args->philosopher_died = &flag;
+    for (int i = 0; i < info->args->philos_num; i++) {
+        pthread_mutex_init(&info->args->forks[i], NULL);
+        pthread_mutex_init(&info->meal_time_mutex, NULL);
     }
 
-    for (int i = 0; i < my_args.philos_num; i++) {
-        t_args *temp_args;
-        temp_args = args_copy(my_args); // continue changing for not_shared
-        temp_args->id = i;  // What to do with id, should I create temp or should I send my args? should noy_shared be a massive?
+    for (int i = 0; i < info->args->philos_num; i++) {
+        t_meal_info *temp_info;
+        temp_info = args_copy(info); // continue changing for not_shared
+        temp_info->id = i;  // What to do with id, should I create temp or should I send my args? should noy_shared be a massive?
 
-        if (pthread_create(&my_args.philos[i], NULL, philosopher, temp_args) != 0) {
+        if (pthread_create(&info->args->philos[i], NULL, philosopher, temp_info) != 0) {
             printf("Failed to create philosopher\n");
-            free(temp_args);
+            free(temp_info);
             return 1;
         }
+        free(temp_info);
     }
-    if (pthread_create(&monitor_thread, NULL, monitor, &my_args) != 0) {
+    if (pthread_create(&monitor_thread, NULL, monitor, &info) != 0) {
             printf("Failed to create philosopher\n");
             return 1;
     }
 
 
-    for (int i = 0; i < my_args.philos_num; i++) {
-        pthread_join(my_args.philos[i], NULL);
+    for (int i = 0; i < info->args->philos_num; i++) {
+        pthread_join(info->args->philos[i], NULL);
     }
 
     return 0;
 }
 
-int philos(t_args my_args) {
-    gettimeofday(&my_args.start_time, NULL);
-    return create_philos_and_forks(my_args);
+int philos(t_meal_info  *info) {
+    gettimeofday(&info->args->start_time, NULL);
+    return create_philos_and_forks(info);
 }
 
 void *monitor(void *arg)
 {
-    t_args *args = (t_args *)arg;
+    t_meal_info *info = (t_meal_info *)arg;
 
     while(1)
     {
-        for(int i = 0; i < args->philos_num; i++)
+        for(int i = 0; i < info->args->philos_num; i++)
         {
-            long current_time = get_time_ms(args);
-            pthread_mutex_lock(&args->meal_time_mutex[i]);
-            if(current_time - args[i].last_meal_time >= args->time2die)
+            long current_time = get_time_ms(info->args);
+            pthread_mutex_lock(&info->meal_time_mutex[i]);
+            if(current_time - info->last_meal_time >= info->args->time2die) // how monitor should know about 
             {
-                printf("%ld %d died\n", get_time_ms(args), args->id);
-                *args->philosopher_died = 1;
-                pthread_mutex_unlock(&args->meal_time_mutex[i]);
+                printf("%ld %d died\n", get_time_ms(info->args), info->id);
+                *info->args->philosopher_died = 1;
+                pthread_mutex_unlock(&info->meal_time_mutex[i]);
                 return NULL;
             }
-            pthread_mutex_unlock(&args->meal_time_mutex[i]);
+            pthread_mutex_unlock(&info->meal_time_mutex[i]);
         }
         usleep(1000);
     }

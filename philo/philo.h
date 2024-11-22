@@ -16,7 +16,7 @@ typedef struct s_args
     // int times2eat;
     pthread_mutex_t *forks;
     pthread_t *philos;
-    t_meal_info *not_shared;
+    // t_meal_info *not_shared;
     int *philosopher_died;
     pthread_mutex_t death_mutex;
     struct timeval start_time;
@@ -27,17 +27,15 @@ typedef struct s_meal_info
     long last_meal_time;
     pthread_mutex_t *meal_time_mutex;
     int id;
+    t_args *args;
 } t_meal_info;
 
-int philos(t_args  my_args);
-int create_philos_and_forks(t_args my_args);
+int philos(t_meal_info  *info);
+int create_philos_and_forks(t_meal_info  *info);
 void *philosopher(void *arg);
-long get_time_ms(t_args *args);
+long get_time_ms(t_meal_info  *info);
 void *monitor(void *arg);
-// typedef struct s_func_args 
-// {
-//     int philos_num;
-// }   t_func_args;
+
 
 
 #endif
