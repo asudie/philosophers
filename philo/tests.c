@@ -7,8 +7,9 @@ int main()
     // info.args->time2die = 5000;
     // info.args->time2eat = 1000;
     // info.args->time2sleep = 1000;
-    t_args args = {6, 5000, 1000, 1000};
-    // allocate memory for t_args <----------------------------------
+    // t_args args = {3, 3000, 1000, 1000};
+    // t_args args = {5, 800, 200, 200}; // No philosopher should die.
+    t_args args = {4, 410, 200, 200}; // No philosopher should die. 0 DIED!!!!!!!!!!!!!!!!!!!
     philos(&args);
     return 0;
 }
