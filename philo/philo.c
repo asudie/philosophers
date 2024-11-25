@@ -13,6 +13,7 @@ void *philosopher(void *arg) {
     int id = info->id;
     int left_fork = id;
     int right_fork = (id + 1) % info->args->philos_num;
+    int meals_count = 0;
 
     printf("%ld %d is here\n", get_time_ms(info->args), id);
 
@@ -31,6 +32,10 @@ void *philosopher(void *arg) {
         if (*info->args->philosopher_died) {
             return NULL; 
         }
+        pthread_mutex_lock(&info->full_mutex);
+        if(info->args->times2eat > 0) // what if 0
+            info->philosopher_full++;
+        pthread_mutex_unlock(&info->full_mutex);
         printf("%ld %d is eating\n", get_time_ms(info->args), id);
         info->last_meal_time = get_time_ms(info->args);
         usleep(1000 * info->args->time2eat);
@@ -45,7 +50,7 @@ void *philosopher(void *arg) {
             return NULL;
         }
         printf("%ld %d is thinking\n", get_time_ms(info->args), id);
-        usleep(1000 * 100);
+        usleep(1000);
     }
 }
 
@@ -59,11 +64,14 @@ int create_philos_and_forks(t_args  *args) {
         printf("Failed to allocate memory for forks, info or philos\n");
         return 1;
     }
-    int flag = 0;
-    args->philosopher_died = &flag;
+    int death = 0;
+    // int full = 0;
+    args->philosopher_died = &death;
+    // args->info->philosopher_full = &full;
     for (int i = 0; i < args->philos_num; i++) {
         pthread_mutex_init(&args->forks[i], NULL);
         pthread_mutex_init(&args->info[i].meal_time_mutex, NULL);
+        pthread_mutex_init(&args->info[i].full_mutex, NULL);
         args->info[i].args = args;
         args->info[i].id = i;
         args->info[i].last_meal_time = get_time_ms(args);
@@ -88,6 +96,23 @@ int philos(t_args  *args) {
     return create_philos_and_forks(args);
 }
 
+int check_full(t_meal_info *info)
+{
+
+    for (int i = 0; i < info->args->philos_num; i++)
+    {
+        pthread_mutex_lock(&info[i].full_mutex); // add mutex to eating
+        if(info[i].philosopher_full < info->args->times2eat)
+        {
+            pthread_mutex_unlock(&info[i].full_mutex);
+            return 0;
+        }
+        pthread_mutex_unlock(&info[i].full_mutex); 
+    }
+    printf("FULL!!!\n");
+    return 1;
+}
+
 void *monitor(void *arg)
 {
     t_meal_info *info = (t_meal_info *)arg;
@@ -108,6 +133,9 @@ void *monitor(void *arg)
                 return NULL;
             }
             pthread_mutex_unlock(&info[i].meal_time_mutex);
+            
+            if(check_full(info))
+                return NULL;  
         }
         usleep(1000);
     }

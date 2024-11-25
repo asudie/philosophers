@@ -9,7 +9,9 @@ int main()
     // info.args->time2sleep = 1000;
     // t_args args = {3, 3000, 1000, 1000};
     // t_args args = {5, 800, 200, 200}; // No philosopher should die.
-    t_args args = {4, 410, 200, 200}; // No philosopher should die. 0 DIED!!!!!!!!!!!!!!!!!!!
+    // t_args args = {4, 410, 200, 200}; // No philosopher should die. 0 DIED!!!!!!!!!!!!!!!!!!!
+    // t_args args = {4, 310, 200, 100}; // One philosopher should die.
+    t_args args = {5, 800, 200, 200, 7}; // No philosopher should die.
     philos(&args);
     return 0;
 }
