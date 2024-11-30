@@ -14,7 +14,7 @@ typedef struct s_meal_info
     long last_meal_time;
     pthread_mutex_t meal_time_mutex;
     int id;
-    int philosopher_full;
+    int meal_count;
     pthread_mutex_t full_mutex; // put it to args, change this flag in philos and catch it in monitor
     t_args *args;
 } t_meal_info;
@@ -30,6 +30,7 @@ typedef struct s_args
     pthread_t *philos;
     t_meal_info *info;
     int *philosopher_died;
+    int *full_stop;
     pthread_mutex_t death_mutex;
     struct timeval start_time;
 }   t_args;
@@ -42,6 +43,7 @@ void *philosopher(void *arg);
 long get_time_ms(t_args  *args);
 void *monitor(void *arg);
 int check_full(t_meal_info *info);
+void *handle_one(t_meal_info *info);
 
 
 
