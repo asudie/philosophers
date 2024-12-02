@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include "../ft_printf/ft_printf.h"
 
 typedef struct s_args t_args;
 
