@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include "../ft_printf/ft_printf.h"
 
 typedef struct s_args t_args;
 
@@ -15,7 +16,7 @@ typedef struct s_meal_info
     pthread_mutex_t meal_time_mutex;
     int id;
     int meal_count;
-    pthread_mutex_t full_mutex; // put it to args, change this flag in philos and catch it in monitor
+    pthread_mutex_t full_mutex;
     t_args *args;
 } t_meal_info;
 
@@ -44,7 +45,5 @@ long get_time_ms(t_args  *args);
 void *monitor(void *arg);
 int check_full(t_meal_info *info);
 void *handle_one(t_meal_info *info);
-
-
 
 #endif

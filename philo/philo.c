@@ -14,7 +14,6 @@ void *handle_one(t_meal_info *info)
     *info->args->philosopher_died = 1;
     printf("%ld %d died\n", get_time_ms(info->args), info->id);
     return NULL;
-
 }
 
 void *philosopher(void *arg) {
@@ -24,7 +23,7 @@ void *philosopher(void *arg) {
     int right_fork = (id + 1) % info->args->philos_num;
     int meals_count = 0;
 
-    printf("%ld %d is here\n", get_time_ms(info->args), id);
+    ft_printf("%ld %d is here\n", get_time_ms(info->args), id);
 
     if(info->args->philos_num == 1)
         return handle_one(info);
@@ -99,10 +98,13 @@ int create_philos_and_forks(t_args  *args) {
         pthread_join(args->philos[i], NULL);
     }
 
+    // DESTROY MUTEXES
+
     return 0;
 }
 
 int philos(t_args  *args) {
+    // struct timeval *__restrict__ __tv
     gettimeofday(&args->start_time, NULL);
     return create_philos_and_forks(args);
 }
@@ -136,7 +138,7 @@ void *monitor(void *arg)
         {
             long current_time = get_time_ms(info->args);
             pthread_mutex_lock(&info[i].meal_time_mutex);
-            if(current_time - info[i].last_meal_time >= info->args->time2die) // how monitor should know about 
+            if(current_time - info[i].last_meal_time >= info->args->time2die)
             {
                 // printf("MONITORING\n");
                 printf("%ld %d died\n", get_time_ms(info->args), info->id);

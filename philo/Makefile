@@ -17,7 +17,7 @@ $(NAME) :
 	$(CC) $(SRCS) $(LIBS) -o $@
 
 test:
-	$(CC) tests.c $(SRCS) $(LIBS) -g -o $@
+	$(CC) tests.c ../ft_printf/ft_printf.c $(SRCS) $(LIBS) -g -o $@
 
 %.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@ 
