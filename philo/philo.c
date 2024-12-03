@@ -28,10 +28,18 @@ void *philosopher(void *arg) {
     if(info->args->philos_num == 1)
         return handle_one(info);
 
+    if(id % 2 == 0){
+        usleep(1);
+    }
+
     while (1) {
+        pthread_mutex_lock(&info->args->death_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
+            pthread_mutex_unlock(&info->args->death_mutex);
             return NULL;
         }
+        pthread_mutex_unlock(&info->args->death_mutex);
+
         
         if (id % 2 == 0) {
             pthread_mutex_lock(&info->args->forks[left_fork]);
@@ -40,32 +48,41 @@ void *philosopher(void *arg) {
             pthread_mutex_lock(&info->args->forks[right_fork]);
             pthread_mutex_lock(&info->args->forks[left_fork]);
         }
-        if (*info->args->philosopher_died || *info->args->full_stop) {
-            return NULL; 
-        }
+        // UNLOCK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+        // if (*info->args->philosopher_died || *info->args->full_stop) {
+        //     return NULL; 
+        // }
+
         pthread_mutex_lock(&info->full_mutex);
         info->meal_count++;
         pthread_mutex_unlock(&info->full_mutex);
         pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is eating\n", get_time_ms(info->args), id);
         pthread_mutex_unlock(&info->args->print_lock);
+
+        pthread_mutex_lock(&info->meal_time_mutex);
         info->last_meal_time = get_time_ms(info->args);
+        pthread_mutex_unlock(&info->meal_time_mutex);
+
         usleep(1000 * info->args->time2eat);
         pthread_mutex_unlock(&info->args->forks[right_fork]);
         pthread_mutex_unlock(&info->args->forks[left_fork]);
-        if (*info->args->philosopher_died || *info->args->full_stop) {
-            return NULL;
-        }
+
+        // if (*info->args->philosopher_died || *info->args->full_stop) {
+        //     return NULL;
+        // }
+
         pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is sleeping\n", get_time_ms(info->args), id);
         pthread_mutex_unlock(&info->args->print_lock);
         usleep(1000 * info->args->time2sleep);
-        if (*info->args->philosopher_died || *info->args->full_stop) {
-            return NULL;
-        }
+        // if (*info->args->philosopher_died || *info->args->full_stop) {
+        //     return NULL;
+        // }
         pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is thinking\n", get_time_ms(info->args), id);
         pthread_mutex_unlock(&info->args->print_lock);
+
         usleep(1000);
     }
 }
@@ -79,18 +96,23 @@ void *philosopher(void *arg) {
 int create_philos_and_forks(t_args  *args) {
     pthread_t monitor_thread;
 
+    // Initialize forks and philosophers before starting threads
     args->forks = malloc(sizeof(pthread_mutex_t) * args->philos_num);
     args->philos = malloc(sizeof(pthread_t) * args->philos_num);
     args->info = malloc(sizeof(t_meal_info) * args->philos_num);
     pthread_mutex_init(&args->print_lock, NULL);
+
     if (!args->forks || !args->philos || !args->info) {
-        printf("Failed to allocate memory for forks, info or philos\n");
+        printf("Failed to allocate memory for forks, info, or philos\n");
         return 1;
     }
+
     int death = 0;
     int full = 0;
     args->philosopher_died = &death;
     args->full_stop = &full;
+
+    // Initialize all mutexes for forks and individual philosopher structs
     for (int i = 0; i < args->philos_num; i++) {
         pthread_mutex_init(&args->forks[i], NULL);
         pthread_mutex_init(&args->info[i].meal_time_mutex, NULL);
@@ -98,27 +120,40 @@ int create_philos_and_forks(t_args  *args) {
         args->info[i].args = args;
         args->info[i].id = i;
         args->info[i].last_meal_time = get_time_ms(args);
+    }
+
+    // Create philosopher threads after mutex initialization
+    for (int i = 0; i < args->philos_num; i++) {
         if (pthread_create(&args->philos[i], NULL, philosopher, &args->info[i]) != 0) {
             printf("Failed to create philosopher\n");
             return 1;
         }
     }
+
     if (pthread_create(&monitor_thread, NULL, monitor, args->info) != 0) {
-            printf("Failed to create philosopher\n");
-            return 1;
+        printf("Failed to create philosopher\n");
+        return 1;
     }
+
+    // Wait for philosopher threads to finish
     for (int i = 0; i < args->philos_num; i++) {
+        pthread_join(args->philos[i], NULL);
         pthread_mutex_destroy(&args->info[i].full_mutex);
         pthread_mutex_destroy(&args->info[i].meal_time_mutex);
-        pthread_join(args->philos[i], NULL);
     }
-    
+
+    pthread_detach(monitor_thread);
+    // Destroy global mutex
     pthread_mutex_destroy(&args->print_lock);
 
-    // DESTROY MUTEXES
+    // Destroy all forks' mutexes
+    for (int i = 0; i < args->philos_num; i++) {
+        pthread_mutex_destroy(&args->forks[i]);
+    }
 
     return 0;
 }
+
 
 int philos(t_args  *args) {
     gettimeofday(&args->start_time, NULL);
@@ -160,9 +195,11 @@ void *monitor(void *arg)
                 pthread_mutex_lock(&info->args->print_lock);
                 printf("%ld %d died\n", get_time_ms(info->args), info->id);
                 pthread_mutex_unlock(&info->args->print_lock);
+
                 pthread_mutex_lock(&info->args->death_mutex);
                 *info->args->philosopher_died = 1;
                 pthread_mutex_unlock(&info->args->death_mutex);
+                
                 pthread_mutex_unlock(&info[i].meal_time_mutex);
                 return NULL;
             }
