@@ -33,6 +33,7 @@ typedef struct s_args
     int *full_stop;
     pthread_mutex_t death_mutex;
     struct timeval start_time;
+    pthread_mutex_t print_lock;
 }   t_args;
 
 

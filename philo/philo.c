@@ -46,7 +46,9 @@ void *philosopher(void *arg) {
         pthread_mutex_lock(&info->full_mutex);
         info->meal_count++;
         pthread_mutex_unlock(&info->full_mutex);
+        pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is eating\n", get_time_ms(info->args), id);
+        pthread_mutex_unlock(&info->args->print_lock);
         info->last_meal_time = get_time_ms(info->args);
         usleep(1000 * info->args->time2eat);
         pthread_mutex_unlock(&info->args->forks[right_fork]);
@@ -54,15 +56,25 @@ void *philosopher(void *arg) {
         if (*info->args->philosopher_died || *info->args->full_stop) {
             return NULL;
         }
+        pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is sleeping\n", get_time_ms(info->args), id);
+        pthread_mutex_unlock(&info->args->print_lock);
         usleep(1000 * info->args->time2sleep);
         if (*info->args->philosopher_died || *info->args->full_stop) {
             return NULL;
         }
+        pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is thinking\n", get_time_ms(info->args), id);
+        pthread_mutex_unlock(&info->args->print_lock);
         usleep(1000);
     }
 }
+
+// void destroy_mutexes(t_args  *args)
+// { 
+//     pthread_mutex_destroy(&args->print_lock);
+//     for(int i = 0; i < args->philos_num;)
+// }
 
 int create_philos_and_forks(t_args  *args) {
     pthread_t monitor_thread;
@@ -70,6 +82,7 @@ int create_philos_and_forks(t_args  *args) {
     args->forks = malloc(sizeof(pthread_mutex_t) * args->philos_num);
     args->philos = malloc(sizeof(pthread_t) * args->philos_num);
     args->info = malloc(sizeof(t_meal_info) * args->philos_num);
+    pthread_mutex_init(&args->print_lock, NULL);
     if (!args->forks || !args->philos || !args->info) {
         printf("Failed to allocate memory for forks, info or philos\n");
         return 1;
@@ -95,8 +108,12 @@ int create_philos_and_forks(t_args  *args) {
             return 1;
     }
     for (int i = 0; i < args->philos_num; i++) {
+        pthread_mutex_destroy(&args->info[i].full_mutex);
+        pthread_mutex_destroy(&args->info[i].meal_time_mutex);
         pthread_join(args->philos[i], NULL);
     }
+    
+    pthread_mutex_destroy(&args->print_lock);
 
     // DESTROY MUTEXES
 
@@ -104,7 +121,6 @@ int create_philos_and_forks(t_args  *args) {
 }
 
 int philos(t_args  *args) {
-    // struct timeval *__restrict__ __tv
     gettimeofday(&args->start_time, NULL);
     return create_philos_and_forks(args);
 }
@@ -141,8 +157,12 @@ void *monitor(void *arg)
             if(current_time - info[i].last_meal_time >= info->args->time2die)
             {
                 // printf("MONITORING\n");
+                pthread_mutex_lock(&info->args->print_lock);
                 printf("%ld %d died\n", get_time_ms(info->args), info->id);
+                pthread_mutex_unlock(&info->args->print_lock);
+                pthread_mutex_lock(&info->args->death_mutex);
                 *info->args->philosopher_died = 1;
+                pthread_mutex_unlock(&info->args->death_mutex);
                 pthread_mutex_unlock(&info[i].meal_time_mutex);
                 return NULL;
             }

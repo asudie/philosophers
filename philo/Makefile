@@ -1,7 +1,7 @@
 NAME = philo
 # ARCHIVE = push_swap.a
 CC = cc
-CFLAGS = -Wall -Werror -Wextra
+CFLAGS = -Wall -Werror -Wextra -fsanitize=thread 
 # MAKE_LIB = ar -rcs
 
 # INC = -Iincludes/ -Ilibft/ -Iprintf/
@@ -17,7 +17,7 @@ $(NAME) :
 	$(CC) $(SRCS) $(LIBS) -o $@
 
 test:
-	$(CC) tests.c  $(SRCS) $(LIBS) -g -o $@
+	$(CC) -fsanitize=thread tests.c  $(SRCS) $(LIBS) -g -o $@
 
 %.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@ 
