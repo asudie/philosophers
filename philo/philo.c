@@ -23,7 +23,7 @@ void *philosopher(void *arg) {
     int right_fork = (id + 1) % info->args->philos_num;
     int meals_count = 0;
 
-    printf("%ld %d is here\n", get_time_ms(info->args), id);
+    // printf("%ld %d is here\n", get_time_ms(info->args), id);
 
     if(info->args->philos_num == 1)
         return handle_one(info);

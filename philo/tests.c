@@ -12,9 +12,9 @@ int main()
     // t_args args = {4, 410, 200, 200}; // No philosopher should die. 
     // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.
     // t_args args = {5, 800, 200, 200, 7}; // No philosopher should die.
-    // t_args args = {1, 800, 200, 200, -42}; // No eating, just die.
+    // t_args args = {1, 800, 200, 200, -42}; // No eating, just die.  // PRINTD DEATH 2 TIMES!!!!!!!!!!!!!!!!
     // t_args args = {4, 410, 200, 200, -42}; // No philosopher should die.
-    t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.
+    // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.
     
     philos(&args);
     return 0;

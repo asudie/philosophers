@@ -17,7 +17,7 @@ $(NAME) :
 	$(CC) $(SRCS) $(LIBS) -o $@
 
 test:
-	$(CC) -fsanitize=thread tests.c  $(SRCS) $(LIBS) -g -o $@
+	$(CC)  -fsanitize=address -g tests.c $(SRCS) $(LIBS) -o $@
 
 %.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@ 
