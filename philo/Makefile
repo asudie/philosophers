@@ -4,7 +4,7 @@ CC = cc
 CFLAGS = -Wall -Werror -Wextra -fsanitize=thread 
 # MAKE_LIB = ar -rcs
 
-# INC = -Iincludes/ -Ilibft/ -Iprintf/
+#  INC = -Iincludes/ -Ilibft/
 
 LIBS = -lpthread
 
@@ -16,8 +16,11 @@ all : $(NAME)
 $(NAME) : 
 	$(CC) $(SRCS) $(LIBS) -o $@
 
-test:
-	$(CC)  -fsanitize=address -g tests.c $(SRCS) $(LIBS) -o $@
+test: libs
+	$(CC)  -fsanitize=address -g tests.c -L../libft -lft $(SRCS) $(LIBS) -o $@
+
+libs:
+	cd ../libft && $(MAKE)
 
 %.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@ 

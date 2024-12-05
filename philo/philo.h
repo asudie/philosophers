@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include "../libft/libft.h"
 
 typedef struct s_args t_args;
 

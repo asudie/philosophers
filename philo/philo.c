@@ -11,8 +11,6 @@ long get_time_ms(t_args *args) {
 void *handle_one(t_meal_info *info)
 {
     usleep(info->args->time2die);
-    *info->args->philosopher_died = 1;
-    printf("%ld %d died\n", get_time_ms(info->args), info->id);
     return NULL;
 }
 
