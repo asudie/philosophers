@@ -8,6 +8,31 @@ long get_time_ms(t_args *args) {
     return (seconds * 1000) + (microsec / 1000);
 }
 
+int check_line(char *str)
+{
+    int i = 0;
+    while(str[i])
+    {
+        if(!ft_isdigit((int)str[i]))
+            return 1;
+        i++;
+    }
+    return 0;
+}
+
+int check_args(int argc, char **argv)
+{
+    int i;
+
+    i = 0;
+    while(i < argc)
+    {
+        if(check_line(argv[i]))
+            return 1;
+    }
+    return 0;
+}
+
 void *handle_one(t_meal_info *info)
 {
     usleep(info->args->time2die);

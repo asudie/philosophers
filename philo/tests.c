@@ -9,6 +9,7 @@ int main(int argc, char **argv)
         return 1;
     }
     t_args args;
+    check_args(argc, argv);
     args.philos_num = ft_atoi(argv[1]);
     args.time2die = ft_atoi(argv[2]);
     args.time2eat = ft_atoi(argv[3]);
@@ -17,6 +18,9 @@ int main(int argc, char **argv)
         args.times2eat = -42;
     else
         args.times2eat = ft_atoi(argv[4]);
+
+    //if(check_values (not 0 and not more than 200 and > 0))
+            // return 1;
 
     // FINISH INPUT VALIDATION
     

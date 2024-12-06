@@ -17,7 +17,7 @@ $(NAME) :
 	$(CC) $(SRCS) $(LIBS) -o $@
 
 test: libs
-	$(CC)  -fsanitize=address -g tests.c -L../libft -lft $(SRCS) $(LIBS) -o $@
+	$(CC) -fsanitize=address -g -L../libft -lft tests.c $(SRCS) $(LIBS) -o $@
 
 libs:
 	cd ../libft && $(MAKE)

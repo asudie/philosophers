@@ -46,5 +46,7 @@ long get_time_ms(t_args  *args);
 void *monitor(void *arg);
 int check_full(t_meal_info *info);
 void *handle_one(t_meal_info *info);
+int check_args(int argc, char **argv);
+int check_line(char *str);
 
 #endif
