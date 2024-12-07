@@ -48,5 +48,6 @@ int check_full(t_meal_info *info);
 void *handle_one(t_meal_info *info);
 int check_args(int argc, char **argv);
 int check_line(char *str);
+int check_values(t_args *args);
 
 #endif

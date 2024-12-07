@@ -20,6 +20,16 @@ int check_line(char *str)
     return 0;
 }
 
+int check_values(t_args *args)
+{
+    if(args->philos_num < 1 || args->philos_num > 200)
+    {
+        printf("Wrong number of philosophers!\n");
+        return 1;
+    }
+    return 0;
+}
+
 int check_args(int argc, char **argv)
 {
     int i;

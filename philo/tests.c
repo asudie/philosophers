@@ -3,13 +3,13 @@
 int main(int argc, char **argv)
 // int main()
 {
-    if(argc < 5 || argc > 6)
+    if(argc < 5 || argc > 6 || check_args(argc, argv))
     {
         printf("Usage: %s number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", argv[0]);
         return 1;
     }
     t_args args;
-    check_args(argc, argv);
+        
     args.philos_num = ft_atoi(argv[1]);
     args.time2die = ft_atoi(argv[2]);
     args.time2eat = ft_atoi(argv[3]);
@@ -19,8 +19,8 @@ int main(int argc, char **argv)
     else
         args.times2eat = ft_atoi(argv[4]);
 
-    //if(check_values (not 0 and not more than 200 and > 0))
-            // return 1;
+    if(check_values(&args))
+            return 1;
 
     // FINISH INPUT VALIDATION
     
