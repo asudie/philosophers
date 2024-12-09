@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     if(argc == 5)
         args.times2eat = -42;
     else
-        args.times2eat = ft_atoi(argv[4]);
+        args.times2eat = ft_atoi(argv[5]);
 
     if(check_values(&args))
             return 1;
@@ -33,11 +33,10 @@ int main(int argc, char **argv)
     // t_args args = {5, 800, 200, 200}; // No philosopher should die.
     // t_args args = {4, 410, 200, 200}; // No philosopher should die. 
     // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die. 
-    // t_args args = {5, 800, 200, 200, 7}; // No philosopher should die.
+    // t_args args = {5, 800, 200, 200, 7}; // No philosopher should die. NOBODY DIES HERE
     // t_args args = {1, 800, 200, 200, -42}; // No eating, just die.
     // t_args args = {4, 410, 200, 200, -42}; // No philosopher should die.
-    // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.
-    
+    // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.   
     philos(&args);
     return 0;
 }

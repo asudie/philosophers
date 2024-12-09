@@ -34,11 +34,12 @@ int check_args(int argc, char **argv)
 {
     int i;
 
-    i = 0;
+    i = 1;
     while(i < argc)
     {
         if(check_line(argv[i]))
             return 1;
+        i++;
     }
     return 0;
 }
@@ -61,10 +62,6 @@ void *philosopher(void *arg) {
     if(info->args->philos_num == 1)
         return handle_one(info);
 
-    if(id % 2 == 0){
-        usleep(1);
-    }
-
     while (1) {
         pthread_mutex_lock(&info->args->death_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
@@ -72,7 +69,6 @@ void *philosopher(void *arg) {
             return NULL;
         }
         pthread_mutex_unlock(&info->args->death_mutex);
-
         
         if (id % 2 == 0) {
             pthread_mutex_lock(&info->args->forks[left_fork]);
@@ -146,6 +142,8 @@ int create_philos_and_forks(t_args  *args) {
     args->philos = malloc(sizeof(pthread_t) * args->philos_num);
     args->info = malloc(sizeof(t_meal_info) * args->philos_num);
     pthread_mutex_init(&args->print_lock, NULL);
+    pthread_mutex_init(&args->death_mutex, NULL);
+
 
     if (!args->forks || !args->philos || !args->info) {
         printf("Failed to allocate memory for forks, info, or philos\n");
