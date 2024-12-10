@@ -32,7 +32,7 @@ typedef struct s_args
     t_meal_info *info;
     int *philosopher_died;
     int *full_stop;
-    pthread_mutex_t death_mutex;
+    pthread_mutex_t deathNfull_mutex;
     struct timeval start_time;
     pthread_mutex_t print_lock;
 }   t_args;

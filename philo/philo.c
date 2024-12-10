@@ -55,7 +55,7 @@ void *philosopher(void *arg) {
     int id = info->id;
     int left_fork = id;
     int right_fork = (id + 1) % info->args->philos_num;
-    int meals_count = 0;
+    info->meal_count = 0;
 
     // printf("%ld %d is here\n", get_time_ms(info->args), id);
 
@@ -63,12 +63,12 @@ void *philosopher(void *arg) {
         return handle_one(info);
 
     while (1) {
-        pthread_mutex_lock(&info->args->death_mutex);
+        pthread_mutex_lock(&info->args->deathNfull_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
-            pthread_mutex_unlock(&info->args->death_mutex);
+            pthread_mutex_unlock(&info->args->deathNfull_mutex);
             return NULL;
         }
-        pthread_mutex_unlock(&info->args->death_mutex);
+        pthread_mutex_unlock(&info->args->deathNfull_mutex);
         
         if (id % 2 == 0) {
             pthread_mutex_lock(&info->args->forks[left_fork]);
@@ -78,15 +78,15 @@ void *philosopher(void *arg) {
             pthread_mutex_lock(&info->args->forks[left_fork]);
         }
         // UNLOCK !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-        pthread_mutex_lock(&info->args->death_mutex);
+        pthread_mutex_lock(&info->args->deathNfull_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
 
-            pthread_mutex_unlock(&info->args->death_mutex);
+            pthread_mutex_unlock(&info->args->deathNfull_mutex);
             pthread_mutex_unlock(&info->args->forks[right_fork]);
             pthread_mutex_unlock(&info->args->forks[left_fork]);
             return NULL;
         }
-        pthread_mutex_unlock(&info->args->death_mutex);
+        pthread_mutex_unlock(&info->args->deathNfull_mutex);
 
         pthread_mutex_lock(&info->full_mutex);
         info->meal_count++;
@@ -103,23 +103,23 @@ void *philosopher(void *arg) {
         pthread_mutex_unlock(&info->args->forks[right_fork]);
         pthread_mutex_unlock(&info->args->forks[left_fork]);
 
-        pthread_mutex_lock(&info->args->death_mutex);
+        pthread_mutex_lock(&info->args->deathNfull_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
-            pthread_mutex_unlock(&info->args->death_mutex);
+            pthread_mutex_unlock(&info->args->deathNfull_mutex);
             return NULL;
         }
-        pthread_mutex_unlock(&info->args->death_mutex);
+        pthread_mutex_unlock(&info->args->deathNfull_mutex);
 
         pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is sleeping\n", get_time_ms(info->args), id);
         pthread_mutex_unlock(&info->args->print_lock);
         usleep(1000 * info->args->time2sleep);
-        pthread_mutex_lock(&info->args->death_mutex);
+        pthread_mutex_lock(&info->args->deathNfull_mutex);
         if (*info->args->philosopher_died || *info->args->full_stop) {
-            pthread_mutex_unlock(&info->args->death_mutex);
+            pthread_mutex_unlock(&info->args->deathNfull_mutex);
             return NULL;
         }
-        pthread_mutex_unlock(&info->args->death_mutex);
+        pthread_mutex_unlock(&info->args->deathNfull_mutex);
         pthread_mutex_lock(&info->args->print_lock);
         printf("%ld %d is thinking\n", get_time_ms(info->args), id);
         pthread_mutex_unlock(&info->args->print_lock);
@@ -127,12 +127,6 @@ void *philosopher(void *arg) {
         usleep(1000);
     }
 }
-
-// void destroy_mutexes(t_args  *args)
-// { 
-//     pthread_mutex_destroy(&args->print_lock);
-//     for(int i = 0; i < args->philos_num;)
-// }
 
 int create_philos_and_forks(t_args  *args) {
     pthread_t monitor_thread;
@@ -142,7 +136,7 @@ int create_philos_and_forks(t_args  *args) {
     args->philos = malloc(sizeof(pthread_t) * args->philos_num);
     args->info = malloc(sizeof(t_meal_info) * args->philos_num);
     pthread_mutex_init(&args->print_lock, NULL);
-    pthread_mutex_init(&args->death_mutex, NULL);
+    pthread_mutex_init(&args->deathNfull_mutex, NULL);
 
 
     if (!args->forks || !args->philos || !args->info) {
@@ -221,8 +215,10 @@ int check_full(t_meal_info *info)
         }
         pthread_mutex_unlock(&info[i].full_mutex); 
     }
+    pthread_mutex_lock(&info->args->deathNfull_mutex);
     *info->args->full_stop = 1;
-    printf("FULL!!!\n");
+    pthread_mutex_unlock(&info->args->deathNfull_mutex);
+    // printf("FULL!!!\n");
     return 1;
 }
 
@@ -243,9 +239,9 @@ void *monitor(void *arg)
                 printf("%ld %d died\n", get_time_ms(info->args), info->id);
                 pthread_mutex_unlock(&info->args->print_lock);
 
-                pthread_mutex_lock(&info->args->death_mutex);
+                pthread_mutex_lock(&info->args->deathNfull_mutex);
                 *info->args->philosopher_died = 1;
-                pthread_mutex_unlock(&info->args->death_mutex);
+                pthread_mutex_unlock(&info->args->deathNfull_mutex);
                 pthread_mutex_unlock(&info[i].meal_time_mutex);
                 return NULL;
             }
