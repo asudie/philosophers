@@ -1,20 +1,16 @@
 NAME = philo
-# ARCHIVE = push_swap.a
 CC = cc
 CFLAGS = -Wall -Werror -Wextra -fsanitize=thread 
-# MAKE_LIB = ar -rcs
-
-#  INC = -Iincludes/ -Ilibft/
 
 LIBS = -lpthread
 
-SRCS = philo.c
+SRCS = tests.c philo.c ../libft/libft.a
 OBJS = $(SRCS:.c=.o)
 
 all : $(NAME)
 
-$(NAME) : 
-	$(CC) $(SRCS) $(LIBS) -o $@
+$(NAME) : libs
+	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -o $@
 
 test: libs
 	$(CC) -fsanitize=address tests.c philo.c ../libft/libft.a -lpthread -g -o test
@@ -26,7 +22,7 @@ libs:
 	$(CC) $(CFLAGS) -c $< -o $@ 
 	
 clean :
-	rm -rf $(OBJS) *.dSYM a.out *.o test
+	rm -rf $(OBJS) *.dSYM a.out *.o test; cd ../libft; make clean
 
 fclean : clean
 	rm -f $(NAME) 
@@ -34,3 +30,5 @@ fclean : clean
 re : fclean all
 
 .PHONY : all clean fclean re
+
+# RELINKING

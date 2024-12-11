@@ -55,7 +55,9 @@ void *philosopher(void *arg) {
     int id = info->id;
     int left_fork = id;
     int right_fork = (id + 1) % info->args->philos_num;
+    pthread_mutex_lock(&info->full_mutex);
     info->meal_count = 0;
+    pthread_mutex_unlock(&info->full_mutex);
 
     // printf("%ld %d is here\n", get_time_ms(info->args), id);
 

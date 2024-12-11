@@ -21,22 +21,17 @@ int main(int argc, char **argv)
 
     if(check_values(&args))
             return 1;
+ 
+    philos(&args);
+    return 0;
+}
 
-    // FINISH INPUT VALIDATION
-    
-    // t_meal_info info;
-    // info.args->philos_num = 6;
-    // info.args->time2die = 5000;
-    // info.args->time2eat = 1000;
-    // info.args->time2sleep = 1000;
-    // t_args args = {3, 3000, 1000, 1000};
     // t_args args = {5, 800, 200, 200}; // No philosopher should die.
     // t_args args = {4, 410, 200, 200}; // No philosopher should die. 
     // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die. 
     // t_args args = {5, 800, 200, 200, 7}; // No philosopher should die.
     // t_args args = {1, 800, 200, 200, -42}; // No eating, just die.
     // t_args args = {4, 410, 200, 200, -42}; // No philosopher should die.
-    // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.   
-    philos(&args);
-    return 0;
-}
+    // t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.  
+
+    // DATA RACE ./philo 1 2 3 4 4
