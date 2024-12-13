@@ -1,34 +1,32 @@
 NAME = philo
 CC = cc
-CFLAGS = -Wall -Werror -Wextra -fsanitize=thread 
-
+CFLAGS = -Wall -Werror -Wextra -fsanitize=thread
 LIBS = -lpthread
 
-SRCS = tests.c philo.c ../libft/libft.a
+SRCS = tests.c philo.c
 OBJS = $(SRCS:.c=.o)
+LIBFT = ../libft/libft.a
 
-all : $(NAME)
+all: $(NAME)
 
-$(NAME) : libs
-	$(CC) $(CFLAGS) $(SRCS) $(LIBS) -o $@
+$(NAME): $(OBJS) $(LIBFT)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(LIBS) -o $(NAME)
 
-test: libs
-	$(CC) -fsanitize=address tests.c philo.c ../libft/libft.a -lpthread -g -o test
-
-libs:
+$(LIBFT):
 	cd ../libft && $(MAKE)
 
-%.o : %.c 
-	$(CC) $(CFLAGS) -c $< -o $@ 
-	
-clean :
-	rm -rf $(OBJS) *.dSYM a.out *.o test; cd ../libft; make clean
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-fclean : clean
-	rm -f $(NAME) 
+test: $(OBJS) $(LIBFT)
+	$(CC) -fsanitize=address $(OBJS) $(LIBFT) $(LIBS) -g -o test
 
-re : fclean all
+clean:
+	rm -rf $(OBJS) *.dSYM a.out *.o test; cd ../libft && make clean
 
-.PHONY : all clean fclean re
+fclean: clean
+	rm -f $(NAME)
 
-# RELINKING
+re: fclean all
+
+.PHONY: all clean fclean re libs test
