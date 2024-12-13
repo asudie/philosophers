@@ -6,7 +6,7 @@
 /*   By: asmolnya <asmolnya@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/13 21:14:15 by asmolnya          #+#    #+#             */
-/*   Updated: 2024/12/13 21:31:31 by asmolnya         ###   ########.fr       */
+/*   Updated: 2024/12/13 21:38:53 by asmolnya         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,10 @@ int	main(int argc, char **argv)
 	return (0);
 }
 
-// t_args args = {5, 800, 200, 200}; // No philosopher should die.
-// t_args args = {4, 410, 200, 200}; // No philosopher should die.
-// t_args args = {4, 310, 200, 100, -42}; // One philosopher should die.
-// t_args args = {5, 800, 200, 200, 7}; // No philosopher should die.
-// t_args args = {1, 800, 200, 200, -42}; // No eating, just die.
 //./philo 201 2 3 4 5
+// ./philo 5 800 200 200
+// ./philo 4 310 200 100
+// ./philo 5 800 200 200 7
+//  ./philo 1 800 200 200
 
 // DATA RACE ./philo 1 2 3 4 4

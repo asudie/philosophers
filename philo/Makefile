@@ -3,7 +3,7 @@ CC = cc
 CFLAGS = -Wall -Werror -Wextra -fsanitize=thread
 LIBS = -lpthread
 
-SRCS = tests.c philo.c
+SRCS = tests.c philo.c monitor.c create_philos.c routine.c utils.c
 OBJS = $(SRCS:.c=.o)
 LIBFT = ../libft/libft.a
 
